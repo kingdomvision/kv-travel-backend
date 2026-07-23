@@ -10,6 +10,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { TenantUser } from './entities/tenant-user.entity';

@@ -317,7 +317,7 @@ export class AuthService {
       },
     );
 
-    const expiresAt = new Date(Date.now() + this.ttlToMs(refreshTtl));
+    const expiresAt = new Date(Date.now() + ttlToMs(refreshTtl));
     await manager.getRepository(RefreshToken).save(
       manager.getRepository(RefreshToken).create({
         subject: input.sub,
