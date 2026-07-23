@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsUUID, MinLength, ValidateIf } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateIf } from 'class-validator';
 
 export class TenantDiscoverDto {
   @IsEmail()
@@ -11,6 +11,7 @@ export class TenantLoginDto {
 
   @IsString()
   @MinLength(8)
+  @MaxLength(128)
   password!: string;
 
   /** Preferred: select organization from discover step */

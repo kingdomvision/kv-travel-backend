@@ -19,6 +19,7 @@ import { TokenAudience, TenantStatus } from '../../common/enums';
 import { LoginDto } from './dto/login.dto';
 import { TenantLoginDto } from './dto/tenant-login.dto';
 import { TenantConnectionService } from '../../database/tenant-connection.service';
+import { ttlToMs } from '../../common/ttl';
 
 export type DiscoverOrganization = {
   tenantId: string;
@@ -103,11 +104,14 @@ export class AuthService {
         .getMany();
 
       return {
-        organizations: users.map((user) => ({
-          tenantId: user.tenant.id,
-          name: user.tenant.name,
-          slug: user.tenant.slug,
-        })),
+        organizations:
+          users.length === 0
+            ? []
+            : users.map((user) => ({
+                tenantId: user.tenant.id,
+                name: user.tenant.name,
+                slug: user.tenant.slug,
+              })),
       };
     });
   }
@@ -337,22 +341,6 @@ export class AuthService {
         tenantName: input.tenantName,
       },
     };
-  }
-
-  private ttlToMs(ttl: string): number {
-    const match = /^(\d+)([smhd])$/i.exec(ttl.trim());
-    if (!match) {
-      return 7 * 24 * 60 * 60 * 1000;
-    }
-    const value = parseInt(match[1], 10);
-    const unit = match[2].toLowerCase();
-    const multipliers: Record<string, number> = {
-      s: 1000,
-      m: 60 * 1000,
-      h: 60 * 60 * 1000,
-      d: 24 * 60 * 60 * 1000,
-    };
-    return value * (multipliers[unit] ?? multipliers.d);
   }
 
   private hashToken(token: string): string {

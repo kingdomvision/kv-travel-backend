@@ -6,6 +6,7 @@ import { Job } from 'bullmq';
 import { NOTIFICATION_QUEUE } from './notification.constants';
 import { DocumentEntity } from '../documents/entities/document.entity';
 import { DocumentStatus } from '../../common/enums';
+import { TenantConnectionService } from '../../database/tenant-connection.service';
 
 @Processor(NOTIFICATION_QUEUE)
 export class NotificationProcessor extends WorkerHost {
@@ -14,6 +15,7 @@ export class NotificationProcessor extends WorkerHost {
   constructor(
     @InjectRepository(DocumentEntity)
     private readonly documents: Repository<DocumentEntity>,
+    private readonly tenantDb: TenantConnectionService,
   ) {
     super();
   }
@@ -23,10 +25,16 @@ export class NotificationProcessor extends WorkerHost {
 
     if (job.name === 'document.uploaded') {
       const documentId = job.data.documentId as string;
-      const doc = await this.documents.findOne({ where: { id: documentId } });
+      const doc = await this.tenantDb.withBypass(async (manager) => {
+        const repo = manager.getRepository(DocumentEntity);
+        return repo.findOne({ where: { id: documentId } });
+      });
       if (doc) {
-        doc.status = DocumentStatus.READY;
-        await this.documents.save(doc);
+        await this.tenantDb.withBypass(async (manager) => {
+          const repo = manager.getRepository(DocumentEntity);
+          doc.status = DocumentStatus.READY;
+          await repo.save(doc);
+        });
       }
       this.logger.log(
         `Stub notification: document ${documentId} ready for tenant ${job.data.tenantId}`,

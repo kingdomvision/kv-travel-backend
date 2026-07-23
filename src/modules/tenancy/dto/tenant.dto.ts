@@ -1,4 +1,5 @@
 import {
+  IsEmail,
   IsEnum,
   IsOptional,
   IsString,
@@ -44,12 +45,13 @@ export class CreateTenantDto {
   adminFullName?: string;
 
   @IsOptional()
-  @IsString()
+  @IsEmail()
   adminEmail?: string;
 
   @IsOptional()
   @IsString()
   @MinLength(8)
+  @MaxLength(128)
   adminPassword?: string;
 }
 

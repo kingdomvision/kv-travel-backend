@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { TenantDiscoverDto, TenantLoginDto } from './dto/tenant-login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { Public } from '../../common/decorators';
+import { ttlToMs } from '../../common/ttl';
 
 type CookieRequest = Request & { cookies?: Record<string, string> };
 
@@ -103,7 +104,7 @@ export class AuthController {
       secure,
       sameSite,
       path: '/',
-      maxAge: this.ttlToMs(refreshTtl),
+      maxAge: ttlToMs(refreshTtl),
     });
   }
 
@@ -112,21 +113,5 @@ export class AuthController {
     const secure = this.config.get<boolean>('app.cookie.secure') ?? false;
     const sameSite = this.config.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') ?? 'lax';
     res.clearCookie(name, { httpOnly: true, secure, sameSite, path: '/' });
-  }
-
-  private ttlToMs(ttl: string): number {
-    const match = /^(\d+)([smhd])$/i.exec(ttl.trim());
-    if (!match) {
-      return 7 * 24 * 60 * 60 * 1000;
-    }
-    const value = parseInt(match[1], 10);
-    const unit = match[2].toLowerCase();
-    const multipliers: Record<string, number> = {
-      s: 1000,
-      m: 60 * 1000,
-      h: 60 * 60 * 1000,
-      d: 24 * 60 * 60 * 1000,
-    };
-    return value * (multipliers[unit] ?? multipliers.d);
   }
 }

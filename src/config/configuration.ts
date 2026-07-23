@@ -1,11 +1,22 @@
 import { registerAs } from '@nestjs/config';
 
+const DEV_SECRET_DEFAULTS = new Set([
+  'dev-only-access-secret-change-me-32b',
+  'dev-only-refresh-secret-change-me-32',
+  'CHANGE_ME_TO_A_RANDOM_SECRET_AT_LEAST_32_CHARS',
+]);
+
 function requireSecret(name: string, value: string | undefined, allowDevDefault: string): string {
   const trimmed = value?.trim() ?? '';
   if (process.env.NODE_ENV === 'production') {
     if (trimmed.length < 32) {
       throw new Error(
         `${name} must be set to a strong secret (min 32 chars) when NODE_ENV=production`,
+      );
+    }
+    if (DEV_SECRET_DEFAULTS.has(trimmed)) {
+      throw new Error(
+        `${name} is set to a known development default. Provide a unique random secret when NODE_ENV=production`,
       );
     }
     return trimmed;
@@ -55,7 +66,7 @@ export default registerAs('app', () => ({
     maxBytes: parseInt(process.env.UPLOAD_MAX_BYTES ?? String(10 * 1024 * 1024), 10),
     allowedContentTypes: (
       process.env.UPLOAD_ALLOWED_CONTENT_TYPES ??
-      'application/pdf,image/jpeg,image/png,image/webp,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/pdf,image/jpeg,image/png,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
       .split(',')
       .map((t) => t.trim())

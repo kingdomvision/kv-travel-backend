@@ -36,6 +36,14 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TenantContextInterceptor());
 
   const nodeEnv = config.get<string>('app.nodeEnv') ?? 'development';
+  if (nodeEnv === 'production') {
+    const cookieSecure = config.get<boolean>('app.cookie.secure');
+    if (!cookieSecure) {
+      logger.warn(
+        'COOKIE_SECURE is false in production. Refresh tokens will be sent over plaintext HTTP.',
+      );
+    }
+  }
   if (nodeEnv !== 'production') {
     const swagger = new DocumentBuilder()
       .setTitle('KV Travel API')
