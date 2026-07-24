@@ -20,7 +20,9 @@ export class DocumentEntity {
   @Column({ name: 'tenant_id', type: 'uuid' })
   tenantId!: string;
 
-  @ManyToOne(() => Tenant, (tenant) => tenant.documents, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Tenant, (tenant) => tenant.documents, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'tenant_id' })
   tenant!: Tenant;
 

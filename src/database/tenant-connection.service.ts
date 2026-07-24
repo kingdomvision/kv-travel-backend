@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
-import { getTenantStore, tenantAls, TenantStore } from '../common/tenant-context';
+import {
+  getTenantStore,
+  tenantAls,
+  TenantStore,
+} from '../common/tenant-context';
 
 @Injectable()
 export class TenantConnectionService {
@@ -13,23 +17,30 @@ export class TenantConnectionService {
   ): Promise<void> {
     if (store.bypassRls) {
       await manager.query(`SELECT set_config('app.bypass_rls', 'true', true)`);
-      await manager.query(`SELECT set_config('app.current_tenant_id', '', true)`);
+      await manager.query(
+        `SELECT set_config('app.current_tenant_id', '', true)`,
+      );
       return;
     }
     await manager.query(`SELECT set_config('app.bypass_rls', 'false', true)`);
-    await manager.query(`SELECT set_config('app.current_tenant_id', $1, true)`, [
-      store.tenantId ?? '',
-    ]);
+    await manager.query(
+      `SELECT set_config('app.current_tenant_id', $1, true)`,
+      [store.tenantId ?? ''],
+    );
   }
 
-  async transaction<T>(work: (manager: EntityManager) => Promise<T>): Promise<T> {
+  async transaction<T>(
+    work: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
     return this.dataSource.transaction(async (manager) => {
       await this.applyRlsSettings(manager);
       return work(manager);
     });
   }
 
-  async withBypass<T>(work: (manager: EntityManager) => Promise<T>): Promise<T> {
+  async withBypass<T>(
+    work: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
     const store: TenantStore = { tenantId: null, bypassRls: true };
     return tenantAls.run(store, () =>
       this.dataSource.transaction(async (manager) => {

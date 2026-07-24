@@ -17,7 +17,11 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Get()
-  @RequireTenantRoles(TenantRole.TENANT_ADMIN, TenantRole.AGENT, TenantRole.FINANCE)
+  @RequireTenantRoles(
+    TenantRole.TENANT_ADMIN,
+    TenantRole.AGENT,
+    TenantRole.FINANCE,
+  )
   list(@CurrentUser() user: AuthUser) {
     return this.documentsService.list(user.tenantId!);
   }
@@ -29,7 +33,11 @@ export class DocumentsController {
   }
 
   @Get(':id/download-url')
-  @RequireTenantRoles(TenantRole.TENANT_ADMIN, TenantRole.AGENT, TenantRole.FINANCE)
+  @RequireTenantRoles(
+    TenantRole.TENANT_ADMIN,
+    TenantRole.AGENT,
+    TenantRole.FINANCE,
+  )
   downloadUrl(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.documentsService.getDownloadUrl(user.tenantId!, id);
   }

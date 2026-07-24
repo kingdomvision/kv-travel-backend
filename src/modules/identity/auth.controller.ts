@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
@@ -65,7 +58,8 @@ export class AuthController {
     @Req() req: CookieRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const cookieName = this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
+    const cookieName =
+      this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
     const refreshToken = dto.refreshToken || req.cookies?.[cookieName];
     const tokens = await this.authService.refresh(refreshToken);
     return this.respondWithTokens(res, tokens);
@@ -79,7 +73,8 @@ export class AuthController {
     @Req() req: CookieRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const cookieName = this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
+    const cookieName =
+      this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
     const refreshToken = dto.refreshToken || req.cookies?.[cookieName];
     await this.authService.revokeRefreshToken(refreshToken);
     this.clearRefreshCookie(res);
@@ -95,9 +90,12 @@ export class AuthController {
   }
 
   private setRefreshCookie(res: Response, refreshToken: string) {
-    const name = this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
+    const name =
+      this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
     const secure = this.config.get<boolean>('app.cookie.secure') ?? false;
-    const sameSite = this.config.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') ?? 'lax';
+    const sameSite =
+      this.config.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') ??
+      'lax';
     const refreshTtl = this.config.get<string>('app.jwt.refreshTtl') ?? '7d';
     res.cookie(name, refreshToken, {
       httpOnly: true,
@@ -109,9 +107,12 @@ export class AuthController {
   }
 
   private clearRefreshCookie(res: Response) {
-    const name = this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
+    const name =
+      this.config.get<string>('app.cookie.refreshName') ?? 'kv_refresh';
     const secure = this.config.get<boolean>('app.cookie.secure') ?? false;
-    const sameSite = this.config.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') ?? 'lax';
+    const sameSite =
+      this.config.get<'lax' | 'strict' | 'none'>('app.cookie.sameSite') ??
+      'lax';
     res.clearCookie(name, { httpOnly: true, secure, sameSite, path: '/' });
   }
 }

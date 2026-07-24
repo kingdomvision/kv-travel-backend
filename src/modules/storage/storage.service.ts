@@ -20,8 +20,10 @@ export class StorageService implements OnModuleInit {
   onModuleInit() {
     const endpoint = this.config.get<string>('app.storage.endpoint');
     this.bucket = this.config.get<string>('app.storage.bucket') ?? 'kv-travel';
-    const accessKeyId = this.config.get<string>('app.storage.accessKeyId') ?? '';
-    const secretAccessKey = this.config.get<string>('app.storage.secretAccessKey') ?? '';
+    const accessKeyId =
+      this.config.get<string>('app.storage.accessKeyId') ?? '';
+    const secretAccessKey =
+      this.config.get<string>('app.storage.secretAccessKey') ?? '';
 
     if (!accessKeyId || !secretAccessKey) {
       this.logger.warn(
@@ -32,7 +34,8 @@ export class StorageService implements OnModuleInit {
     this.client = new S3Client({
       region: this.config.get<string>('app.storage.region') ?? 'us-east-1',
       endpoint: endpoint || undefined,
-      forcePathStyle: this.config.get<boolean>('app.storage.forcePathStyle') ?? false,
+      forcePathStyle:
+        this.config.get<boolean>('app.storage.forcePathStyle') ?? false,
       credentials: {
         accessKeyId,
         secretAccessKey,

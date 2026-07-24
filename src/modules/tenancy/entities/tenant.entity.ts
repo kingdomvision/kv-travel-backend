@@ -11,6 +11,8 @@ import {
 import { TenantStatus } from '../../../common/enums';
 import { Plan } from './plan.entity';
 import { TenantUser } from './tenant-user.entity';
+import { TenantModule } from './tenant-module.entity';
+import { TenantAddon } from './tenant-addon.entity';
 import { DocumentEntity } from '../../documents/entities/document.entity';
 import { AuditLog } from '../../identity/entities/audit-log.entity';
 
@@ -57,6 +59,12 @@ export class Tenant {
 
   @OneToMany(() => TenantUser, (user) => user.tenant)
   users!: TenantUser[];
+
+  @OneToMany(() => TenantModule, (tm) => tm.tenant)
+  tenantModules!: TenantModule[];
+
+  @OneToMany(() => TenantAddon, (ta) => ta.tenant)
+  tenantAddons!: TenantAddon[];
 
   @OneToMany(() => DocumentEntity, (doc) => doc.tenant)
   documents!: DocumentEntity[];

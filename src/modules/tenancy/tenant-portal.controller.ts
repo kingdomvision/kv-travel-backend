@@ -36,7 +36,11 @@ export class TenantPortalController {
   ) {}
 
   @Get('me/company')
-  @RequireTenantRoles(TenantRole.TENANT_ADMIN, TenantRole.AGENT, TenantRole.FINANCE)
+  @RequireTenantRoles(
+    TenantRole.TENANT_ADMIN,
+    TenantRole.AGENT,
+    TenantRole.FINANCE,
+  )
   getCompany(@CurrentUser() user: AuthUser) {
     return this.tenantsService.findOne(user.tenantId!);
   }
@@ -51,7 +55,11 @@ export class TenantPortalController {
   }
 
   @Get('me/users')
-  @RequireTenantRoles(TenantRole.TENANT_ADMIN, TenantRole.AGENT, TenantRole.FINANCE)
+  @RequireTenantRoles(
+    TenantRole.TENANT_ADMIN,
+    TenantRole.AGENT,
+    TenantRole.FINANCE,
+  )
   listUsers(@CurrentUser() user: AuthUser) {
     return this.usersService.list(user.tenantId!);
   }

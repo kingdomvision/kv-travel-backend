@@ -6,16 +6,21 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Tenant } from './tenant.entity';
-import { PlanModule } from './plan-module.entity';
+import { TravelModule } from '../../../common/enums';
+import { TenantAddon } from './tenant-addon.entity';
 
-@Entity({ name: 'plans' })
-export class Plan {
+@Entity({ name: 'addons' })
+export class Addon {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
-  code!: string;
+  @Column({
+    name: 'module_code',
+    type: 'enum',
+    enum: TravelModule,
+    enumName: 'travel_module_enum',
+  })
+  moduleCode!: TravelModule;
 
   @Column()
   name!: string;
@@ -23,11 +28,8 @@ export class Plan {
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @Column({ name: 'max_users', default: 10 })
-  maxUsers!: number;
-
-  @Column({ name: 'price_monthly', type: 'int', nullable: true })
-  priceMonthly!: number | null;
+  @Column({ name: 'price_monthly', type: 'int' })
+  priceMonthly!: number;
 
   @Column({ name: 'price_yearly', type: 'int', nullable: true })
   priceYearly!: number | null;
@@ -41,9 +43,6 @@ export class Plan {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
-  @OneToMany(() => Tenant, (tenant) => tenant.plan)
-  tenants!: Tenant[];
-
-  @OneToMany(() => PlanModule, (pm) => pm.plan, { cascade: true })
-  planModules!: PlanModule[];
+  @OneToMany(() => TenantAddon, (ta) => ta.addon)
+  tenantAddons!: TenantAddon[];
 }

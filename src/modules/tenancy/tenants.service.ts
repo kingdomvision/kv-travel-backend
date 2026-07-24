@@ -6,14 +6,19 @@ import {
 import * as bcrypt from 'bcrypt';
 import { Tenant } from './entities/tenant.entity';
 import { Plan } from './entities/plan.entity';
+import { PlanModule } from './entities/plan-module.entity';
 import { TenantUser } from './entities/tenant-user.entity';
+import { TenantModule } from './entities/tenant-module.entity';
 import {
   CreateTenantDto,
   UpdateTenantProfileDto,
   UpdateTenantStatusDto,
 } from './dto/tenant.dto';
+import { ChangeTenantPlanDto } from './dto/tenant-module.dto';
 import {
   AuditActorType,
+  ModuleSource,
+  TenantModuleStatus,
   TenantRole,
   TenantStatus,
 } from '../../common/enums';
@@ -42,6 +47,23 @@ export class TenantsService {
       const tenant = await manager.getRepository(Tenant).findOne({
         where: { id },
         relations: { plan: true },
+      });
+      if (!tenant) {
+        throw new NotFoundException('Tenant not found');
+      }
+      return tenant;
+    });
+  }
+
+  async findOneWithModules(id: string) {
+    return this.tenantDb.withBypass(async (manager) => {
+      const tenant = await manager.getRepository(Tenant).findOne({
+        where: { id },
+        relations: {
+          plan: { planModules: { module: true } },
+          tenantModules: { module: true },
+          tenantAddons: { addon: true },
+        },
       });
       if (!tenant) {
         throw new NotFoundException('Tenant not found');
@@ -82,6 +104,11 @@ export class TenantsService {
           timezone: dto.timezone ?? 'UTC',
         }),
       );
+
+      // Sync tenant_modules from plan
+      if (plan) {
+        await this.syncModulesFromPlan(manager, tenant.id, plan.id);
+      }
 
       if (dto.adminEmail && dto.adminPassword && dto.adminFullName) {
         await tenantUsers.save(
@@ -171,12 +198,122 @@ export class TenantsService {
     });
   }
 
+  async changePlan(
+    tenantId: string,
+    dto: ChangeTenantPlanDto,
+    actor: AuthUser,
+  ) {
+    return this.tenantDb.withBypass(async (manager) => {
+      const tenants = manager.getRepository(Tenant);
+      const plans = manager.getRepository(Plan);
+
+      const tenant = await tenants.findOne({ where: { id: tenantId } });
+      if (!tenant) {
+        throw new NotFoundException('Tenant not found');
+      }
+
+      const newPlan = await plans.findOne({ where: { id: dto.planId } });
+      if (!newPlan) {
+        throw new BadRequestException('Plan not found');
+      }
+
+      tenant.planId = dto.planId;
+      await tenants.save(tenant);
+
+      // Re-sync modules from new plan (preserving addon-sourced modules)
+      await this.syncModulesFromPlan(manager, tenantId, dto.planId);
+
+      await this.audit.log({
+        action: 'tenant.plan.changed',
+        actorType: AuditActorType.PLATFORM_USER,
+        actorId: actor.sub,
+        tenantId,
+        entityType: 'tenant',
+        entityId: tenantId,
+        metadata: {
+          previousPlanId: tenant.planId,
+          newPlanId: dto.planId,
+          newPlanCode: newPlan.code,
+        },
+      });
+
+      return this.findOneWithModules(tenantId);
+    });
+  }
+
   listPlans() {
     return this.tenantDb.withBypass((manager) =>
       manager.getRepository(Plan).find({
         where: { isActive: true },
+        relations: { planModules: { module: true } },
         order: { name: 'ASC' },
       }),
     );
+  }
+
+  private async syncModulesFromPlan(
+    manager: import('typeorm').EntityManager,
+    tenantId: string,
+    planId: string,
+  ) {
+    const planModules = manager.getRepository(PlanModule);
+    const tenantModules = manager.getRepository(TenantModule);
+
+    const planModulesList = await planModules.find({
+      where: { planId },
+    });
+    const planModuleCodes = new Set(planModulesList.map((pm) => pm.moduleCode));
+
+    // Get existing tenant modules
+    const existingModules = await tenantModules.find({
+      where: { tenantId },
+    });
+
+    // Remove plan-sourced modules that are no longer in the plan
+    for (const tm of existingModules) {
+      if (
+        tm.source === ModuleSource.PLAN &&
+        !planModuleCodes.has(tm.moduleCode)
+      ) {
+        await tenantModules.remove(tm);
+      }
+    }
+
+    // Add or update plan-sourced modules
+    for (const pm of planModulesList) {
+      const existing = await tenantModules.findOne({
+        where: {
+          tenantId,
+          moduleCode: pm.moduleCode,
+          source: ModuleSource.PLAN,
+        },
+      });
+
+      if (existing) {
+        existing.status = TenantModuleStatus.ACTIVE;
+        existing.metadata = { limits: pm.limits };
+        await tenantModules.save(existing);
+      } else {
+        // Only create if no addon-sourced module exists for same code
+        const addonModule = await tenantModules.findOne({
+          where: {
+            tenantId,
+            moduleCode: pm.moduleCode,
+            source: ModuleSource.ADDON,
+          },
+        });
+        if (!addonModule) {
+          await tenantModules.save(
+            tenantModules.create({
+              tenantId,
+              moduleCode: pm.moduleCode,
+              source: ModuleSource.PLAN,
+              status: TenantModuleStatus.ACTIVE,
+              metadata: { limits: pm.limits },
+            }),
+          );
+        }
+      }
+    }
   }
 }

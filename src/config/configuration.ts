@@ -6,7 +6,11 @@ const DEV_SECRET_DEFAULTS = new Set([
   'CHANGE_ME_TO_A_RANDOM_SECRET_AT_LEAST_32_CHARS',
 ]);
 
-function requireSecret(name: string, value: string | undefined, allowDevDefault: string): string {
+function requireSecret(
+  name: string,
+  value: string | undefined,
+  allowDevDefault: string,
+): string {
   const trimmed = value?.trim() ?? '';
   if (process.env.NODE_ENV === 'production') {
     if (trimmed.length < 32) {
@@ -28,7 +32,9 @@ export default registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3000', 10),
   apiPrefix: process.env.API_PREFIX ?? 'api/v1',
-  corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:4200,http://localhost:4201')
+  corsOrigins: (
+    process.env.CORS_ORIGINS ?? 'http://localhost:4200,http://localhost:4201'
+  )
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),
@@ -48,8 +54,11 @@ export default registerAs('app', () => ({
   },
   cookie: {
     refreshName: process.env.REFRESH_COOKIE_NAME ?? 'kv_refresh',
-    secure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',
-    sameSite: (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') ?? 'lax',
+    secure:
+      process.env.COOKIE_SECURE === 'true' ||
+      process.env.NODE_ENV === 'production',
+    sameSite:
+      (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') ?? 'lax',
   },
   databaseUrl: process.env.DATABASE_URL,
   redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
@@ -63,7 +72,10 @@ export default registerAs('app', () => ({
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
   },
   uploads: {
-    maxBytes: parseInt(process.env.UPLOAD_MAX_BYTES ?? String(10 * 1024 * 1024), 10),
+    maxBytes: parseInt(
+      process.env.UPLOAD_MAX_BYTES ?? String(10 * 1024 * 1024),
+      10,
+    ),
     allowedContentTypes: (
       process.env.UPLOAD_ALLOWED_CONTENT_TYPES ??
       'application/pdf,image/jpeg,image/png,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'

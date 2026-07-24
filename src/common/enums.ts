@@ -33,3 +33,35 @@ export enum TokenAudience {
   PLATFORM = 'platform',
   TENANT = 'tenant',
 }
+
+export enum TravelModule {
+  FLIGHTS = 'FLIGHTS',
+  HOTELS = 'HOTELS',
+  PACKAGES = 'PACKAGES',
+  VISA = 'VISA',
+  TRANSFERS = 'TRANSFERS',
+  INSURANCE = 'INSURANCE',
+  CRUISES = 'CRUISES',
+}
+
+export enum ModuleSource {
+  PLAN = 'PLAN',
+  ADDON = 'ADDON',
+}
+
+export enum TenantModuleStatus {
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum AddonBillingCycle {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
+export enum AddonStatus {
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+}

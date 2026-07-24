@@ -18,4 +18,3 @@ export class HealthController {
     return { status: 'ok', database: 'up' };
   }
 }
-

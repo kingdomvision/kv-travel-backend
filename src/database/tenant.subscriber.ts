@@ -18,7 +18,7 @@ export class TenantSubscriber implements EntitySubscriberInterface {
   }
 
   beforeUpdate(event: UpdateEvent<Record<string, unknown>>): void {
-    this.applyTenantId(event.entity as Record<string, unknown> | undefined);
+    this.applyTenantId(event.entity);
   }
 
   private applyTenantId(entity?: Record<string, unknown>): void {

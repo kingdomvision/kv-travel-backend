@@ -5,11 +5,7 @@ import { Plan } from '../modules/tenancy/entities/plan.entity';
 import { Tenant } from '../modules/tenancy/entities/tenant.entity';
 import { TenantUser } from '../modules/tenancy/entities/tenant-user.entity';
 import { PlatformUser } from '../modules/identity/entities/platform-user.entity';
-import {
-  PlatformRole,
-  TenantRole,
-  TenantStatus,
-} from '../common/enums';
+import { PlatformRole, TenantRole, TenantStatus } from '../common/enums';
 import { StorageService } from '../modules/storage/storage.service';
 import { TenantConnectionService } from './tenant-connection.service';
 
@@ -38,11 +34,18 @@ export class SeedService implements OnModuleInit {
     }
 
     const platformEmail = this.config.get<string>('app.seed.platformEmail');
-    const platformPassword = this.config.get<string>('app.seed.platformPassword');
+    const platformPassword = this.config.get<string>(
+      'app.seed.platformPassword',
+    );
     const tenantEmail = this.config.get<string>('app.seed.tenantEmail');
     const tenantPassword = this.config.get<string>('app.seed.tenantPassword');
 
-    if (!platformEmail || !platformPassword || !tenantEmail || !tenantPassword) {
+    if (
+      !platformEmail ||
+      !platformPassword ||
+      !tenantEmail ||
+      !tenantPassword
+    ) {
       this.logger.warn(
         'Seed skipped: set SEED_PLATFORM_EMAIL/PASSWORD and SEED_TENANT_EMAIL/PASSWORD in .env',
       );

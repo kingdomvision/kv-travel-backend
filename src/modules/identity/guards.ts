@@ -92,14 +92,20 @@ export class RolesGuard implements CanActivate {
     }
 
     if (platformRoles?.length) {
-      if (user.audience !== 'platform' || !platformRoles.includes(user.role as PlatformRole)) {
+      if (
+        user.audience !== 'platform' ||
+        !platformRoles.includes(user.role as PlatformRole)
+      ) {
         throw new ForbiddenException('Insufficient platform role');
       }
       return true;
     }
 
     if (tenantRoles?.length) {
-      if (user.audience !== 'tenant' || !tenantRoles.includes(user.role as TenantRole)) {
+      if (
+        user.audience !== 'tenant' ||
+        !tenantRoles.includes(user.role as TenantRole)
+      ) {
         throw new ForbiddenException('Insufficient tenant role');
       }
       return true;

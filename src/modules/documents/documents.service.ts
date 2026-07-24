@@ -7,13 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import {
-  IsInt,
-  IsString,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsInt, IsString, MaxLength, Min, MinLength } from 'class-validator';
 import { DocumentEntity } from './entities/document.entity';
 import { StorageService } from '../storage/storage.service';
 import { DocumentStatus, AuditActorType } from '../../common/enums';
@@ -91,7 +85,9 @@ export class DocumentsService {
       );
     }
     if (dto.sizeBytes !== body.length) {
-      throw new BadRequestException('sizeBytes does not match decoded content length');
+      throw new BadRequestException(
+        'sizeBytes does not match decoded content length',
+      );
     }
 
     const key = this.storage.buildKey(tenantId, dto.fileName);
